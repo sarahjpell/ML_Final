@@ -5,9 +5,10 @@ Created on Mon Dec  9 23:43:54 2019
 
 @author: sarahpell
 """
-
-from keras import backend as K
-K.clear_session()
+#following guide from:
+#https://stackabuse.com/text-generation-with-python-and-tensorflow-keras/
+# from keras import backend as K
+# K.clear_session()
 
 import numpy
 import sys
@@ -48,15 +49,12 @@ for r1 in data1.keys()[:1000]:
 #         recipes += 'instructions: ' + data3[r3]['instructions'].rstrip()
 # print(recipes)
                
-        
-       
-        
 tokenized_recipes = tokenize_txt(recipes)
 
 char_list = sorted(list(set(tokenized_recipes)))
-print(char_list)
+# print(char_list)
 char_cts = dict((c, i) for i, c in enumerate(char_list))
-print(char_cts)
+# print(char_cts)
 
 input_len = len(tokenized_recipes)
 num_chars = len(char_list)
