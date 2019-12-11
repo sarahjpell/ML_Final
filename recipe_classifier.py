@@ -20,56 +20,49 @@ from keras.layers import Dense
 from keras.layers import Dropout, LSTM, Bidirectional, Activation
 from keras.utils import to_categorical
 
+from nltk.tokenize import word_tokenize
 
 X = []
 y = []
 #salad, soup, cookies, sandwich, cake, pasta
 data = pd.read_csv(r'RAW_recipes.csv')
-data.head()
-descs = data['description'][:5000]
-
+instructions = data['steps']
 #print(descs)
 
-
-for d in descs:
-    if type(d) is str:
-        d = re.sub(r'\[[0-9]*\]', ' ', d)
-        d = re.sub(r'\s+', ' ', d)
-        d = re.sub('[^a-zA-Z]', ' ', d )
-        d = re.sub(r'\s+', ' ', d)
+for i in instructions:
+    if type(i) is str:
+        i = re.sub(r'\[[0-9]*\]', ' ', i)
+        i = re.sub(r'\s+', ' ', i)
+        i = re.sub('[^a-zA-Z]', ' ', i)
+        i = re.sub(r'\s+', ' ', i)
         
-        if 'salad' in d:
+        if 'salad' in i:
             y.append('salad')
-            X.append(d)
-        elif 'soup' in d:
+            X.append(i)
+        elif 'soup' in i:
             y.append('soup')
-            X.append(d)
-        elif 'cookies' in d:
+            X.append(i)
+        elif 'cookies' in i:
             y.append('cookies')
-            X.append(d)
-        elif 'sandwich' in d:
+            X.append(i)
+        elif 'sandwich' in i:
             y.append('sandwich')
-            X.append(d)
-        elif 'cake' in d:
+            X.append(i)
+        elif 'cake' in i:
             y.append('cake')
-            X.append(d)
-        elif 'pasta' in d:
+            X.append(i)
+        elif 'pasta' in i:
             y.append('pasta')
-            X.append(d)
+            X.append(i)
         else:
             pass
     else:
         pass
     
 
-
-
-
-from nltk.tokenize import word_tokenize
 le = preprocessing.LabelEncoder()
 y = le.fit_transform(y)
 y = to_categorical(y, num_classes=None)
-
 
 all_words = []
 for val in X:
@@ -84,13 +77,13 @@ vocab_len = len(unique_words) + 10
 embedded_sentences = [one_hot(sent, vocab_len) for sent in X]
 #print(embedded_sentences )
 
-word_count = lambda sentence: len(word_tokenize(sentence))
-longest_sentence = max(X, key=word_count)
-length_long_sentence = len(word_tokenize(longest_sentence))
+word_ct = lambda sentence: len(word_tokenize(sentence))
+long_sent = max(X, key=word_ct)
+len_long_sent = len(word_tokenize(long_sent))
 
 
-padded_sentences = pad_sequences(embedded_sentences, length_long_sentence, padding='post')
-padded_sentences = padded_sentences.reshape(1009,length_long_sentence,1)
+padded_sentences = pad_sequences(embedded_sentences, len_long_sent, padding='post')
+padded_sentences = padded_sentences.reshape(1009,len_long_sent,1)
 
 
 p = []
@@ -114,16 +107,12 @@ for i in range(0,len(padded_sentences)):
 model = Sequential()
 
 cells = [
-
 LSTM(100),
-
 LSTM(100),
-
 LSTM(100),
-
 ]
 
-model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=((length_long_sentence,1))))
+model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=((len_long_sent,1))))
 model.add(Bidirectional(LSTM(128)))
 model.add(Dense(64))
 model.add(Dropout(0.2))
@@ -134,9 +123,9 @@ model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-print(model.summary())
+# print(model.summary())
 
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
+# model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
 model.fit(padded_sentences, y, epochs=1, verbose=1)
 loss, accuracy = model.evaluate(padded_sentences, y, verbose=0)
